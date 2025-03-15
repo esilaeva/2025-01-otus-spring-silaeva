@@ -1,16 +1,13 @@
 package ru.otus.hw.service;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dao.QuestionDao;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.domain.Student;
 import ru.otus.hw.domain.TestResult;
-
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +32,12 @@ public class TestServiceImpl implements TestService {
 
     private final QuestionDao questionDao;
 
+    private static void displayQuestionWithAnswers(Question question, IOService ioService) {
+        ioService.printFormattedLine(QUESTION_TEMPLATE, question.text());
+        question.answers().forEach(addCounter((counter, answer) ->
+            ioService.printFormattedLine(ANSWER_TEMPLATE, counter, answer.text())));
+    }
+    
     @Override
     public TestResult executeTestFor(Student student) {
         ioService.printLine(EMPTY);
@@ -43,42 +46,19 @@ public class TestServiceImpl implements TestService {
         var testResult = new TestResult(student);
         for (var question : questions) {
             var isAnswerValid = false;
-            var numberOfAnswers = question.answers().size();
-            displayQuestionWithAnswers(question);
-            int chosenIndex = Stream.generate(() -> {
-                        var input = ioService.readStringWithPrompt(ANSWER_PROMPT);
-                        Optional<Integer> parsedAnswer = parseInputToIndex(input, numberOfAnswers);
-                        parsedAnswer.ifPresentOrElse(answer -> {
-                                },
-                                () -> ioService.printFormattedLine(INVALID_ANSWER_BANNER, numberOfAnswers));
-                        return parsedAnswer;
-                    })
-                    .flatMap(Optional::stream)
-                    .findFirst()
-                    .orElseThrow();
-            isAnswerValid = question.answers().get(chosenIndex).isCorrect();
+            displayQuestionWithAnswers(question, ioService);
+            int chosenAnswer = ioService.readIntForRangeWithPrompt(INIT_COUNTER,
+                question.answers().size(),
+                ANSWER_PROMPT,
+                INVALID_ANSWER_BANNER);
+            isAnswerValid = question.answers().get(chosenAnswer - INIT_COUNTER).isCorrect();
             testResult.applyAnswer(question, isAnswerValid);
         }
         return testResult;
     }
 
-    private void displayQuestionWithAnswers(Question question) {
-        ioService.printFormattedLine(QUESTION_TEMPLATE, question.text());
-        question.answers().forEach(addCounter((counter, answer) ->
-                ioService.printFormattedLine(ANSWER_TEMPLATE, counter, answer.text())));
-    }
-
     private static <T> Consumer<T> addCounter(BiConsumer<Short, T> biConsumer) {
         Short[] counter = {INIT_COUNTER};
         return element -> biConsumer.accept(counter[0]++, element);
-    }
-
-    private static Optional<Integer> parseInputToIndex(String input, int numberOfAnswers) {
-        try {
-            int index = Integer.parseInt(input) - 1;
-            return (index >= 0 && index < numberOfAnswers) ? Optional.of(index) : Optional.empty();
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
     }
 }
