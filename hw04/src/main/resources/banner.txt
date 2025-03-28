@@ -1,0 +1,12 @@
+${AnsiColor.GREEN}
+███████████████████████████████████╗   ██╗██████╗     █████████╗   ███████████████████████████╗   ███╗
+╚══██╔══██╔════██╔════╚══██╔══██████╗  ████╔════╝     ██╔════╚██╗ ██╔██╔════╚══██╔══██╔════████╗ ████║
+   ██║  █████╗ ███████╗  ██║  ████╔██╗ ████║  ███╗    ███████╗╚████╔╝███████╗  ██║  █████╗ ██╔████╔██║
+   ██║  ██╔══╝ ╚════██║  ██║  ████║╚██╗████║   ██║    ╚════██║ ╚██╔╝ ╚════██║  ██║  ██╔══╝ ██║╚██╔╝██║
+   ██║  ██████████████║  ██║  ████║ ╚████╚██████╔╝    ███████║  ██║  ███████║  ██║  █████████║ ╚═╝ ██║
+   ╚═╝  ╚══════╚══════╝  ╚═╝  ╚═╚═╝  ╚═══╝╚═════╝     ╚══════╝  ╚═╝  ╚══════╝  ╚═╝  ╚══════╚═╝     ╚═╝
+${AnsiColor.DEFAULT}
+:: App Name          :: ${AnsiColor.RED}${application.title} ${AnsiColor.YELLOW}(version:${application.version})${AnsiColor.DEFAULT}
+:: Spring Boot       :: ${AnsiStyle.BOLD}${spring-boot.version}${AnsiStyle.NORMAL}
+:: Java Version      :: ${AnsiStyle.BOLD}${java.version}${AnsiStyle.NORMAL} (${java.vendor})
+:: OS                :: ${AnsiStyle.BOLD}${os.name}${AnsiColor.DEFAULT}
