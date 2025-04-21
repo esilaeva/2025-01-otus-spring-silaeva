@@ -14,7 +14,6 @@ import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.utils.TestUtils;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,7 +66,7 @@ class JpaCommentRepositoryTest {
     @ParameterizedTest
     void shouldReturnCorrectCommentsByBookId(long bookId) {
         var actualComments = jpaCommentRepository.findByBookId(bookId);
-        var expectedComments = getCommentsId(actualComments)
+        var expectedComments = TestUtils.getCommentsId(actualComments)
                 .stream()
                 .map(id -> testEntityManager.find(Comment.class, id))
                 .toList();
@@ -136,11 +135,5 @@ class JpaCommentRepositoryTest {
         assertThatThrownBy(() -> jpaCommentRepository.deleteById(commentId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage(COMMENT_NOT_FOUND_MESSAGE.formatted(commentId));
-    }
-
-    private List<Long> getCommentsId(List<Comment> comments) {
-        return comments.stream()
-                .map(Comment::getId)
-                .toList();
     }
 }

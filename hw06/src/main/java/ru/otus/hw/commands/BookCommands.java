@@ -8,7 +8,6 @@ import ru.otus.hw.services.BookService;
 
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"SpellCheckingInspection", "unused"})
 @RequiredArgsConstructor
 @ShellComponent
 public class BookCommands {
@@ -23,18 +22,16 @@ public class BookCommands {
                 .map(bookConverter::bookToString)
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
-
+    
     @ShellMethod(value = "Find book by id", key = "bbid")
     public String findBookById(long id) {
-        return bookService.findById(id)
-                .map(bookConverter::bookToString)
-                .orElse("Book with id %d not found".formatted(id));
+        return bookConverter.bookToString(bookService.findById(id));
     }
 
     // bins newBook 1 1
     @ShellMethod(value = "Insert book", key = "bins")
     public String insertBook(String title, long authorId, long genreId) {
-        var savedBook = bookService.insert(title, authorId, genreId);
+        var savedBook = bookService.create(title, authorId, genreId);
         return bookConverter.bookToString(savedBook);
     }
 

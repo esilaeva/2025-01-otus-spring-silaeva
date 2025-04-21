@@ -32,10 +32,10 @@ public class CommentCommands {
                 .map(commentConverter::commentToString)
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
-
+    
     @ShellMethod(value = "Insert comment", key = "cins")
     public String insertComment(long bookId, String commentContent) {
-        var savedComment = commentService.insert(bookId, commentContent);
+        var savedComment = commentService.create(bookId, commentContent);
         return commentConverter.commentToString(savedComment);
     }
 
