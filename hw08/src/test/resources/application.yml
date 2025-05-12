@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: hw08-spring-mongodb
+  data:
+    mongodb:
+      port: 0
+      database: db
+  shell:
+    interactive:
+      enabled: false
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 8.0.5
+
+mongock:
+  runner-type: InitializingBean
+
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+  change-logs-scan-package:
+    - ru.otus.hw.testdata
