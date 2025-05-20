@@ -7,9 +7,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.dto.GenreDto;
+import ru.otus.hw.dto.*;
+import ru.otus.hw.mapper.DtoToDtoMapper;
 import ru.otus.hw.mapper.EntityToDtoMapper;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Genre;
@@ -37,7 +36,10 @@ class BookControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private EntityToDtoMapper mapper;
+    private EntityToDtoMapper entityToDtoMapper;
+
+    @Autowired
+    private DtoToDtoMapper dtoToDtoMapper;
 
     @MockitoBean
     private AuthorService authorService;
@@ -55,8 +57,9 @@ class BookControllerTest {
         var expectedBooks = Stream.of(
                         createExpectedBook(1L, "BookTitle_1", "Author_1", "Genre_1"),
                         createExpectedBook(2L, "BookTitle_2", "Author_2", "Genre_2"),
-                        createExpectedBook(3L, "BookTitle_3", "Author_3", "Genre_3"))
-                .map(mapper::bookToBookDto)
+                        createExpectedBook(3L, "BookTitle_3", "Author_3", "Genre_3")
+                )
+                .map(entityToDtoMapper::bookToBookDto)
                 .toList();
 
         when(bookService.findAll()).thenReturn(expectedBooks);
@@ -67,18 +70,98 @@ class BookControllerTest {
                 .andExpect(model().attribute("books", expectedBooks));
     }
 
-    @DisplayName("Should redirect to all books page after insert book")
+    @DisplayName("Should return book create page")
+    @Test
+    void bookCreatedPage() throws Exception {
+        List<AuthorDto> authorDtoList = Stream.of(
+                        new Author(1L, "Author_1"),
+                        new Author(2L, "Author_2"),
+                        new Author(3L, "Author_3"))
+                .map(entityToDtoMapper::authorToAuthorDto)
+                .toList();
+
+        List<GenreDto> genreDtoList = Stream.of(
+                        new Genre(1L, "Genre_1"),
+                        new Genre(2L, "Genre_2"))
+                .map(entityToDtoMapper::genreToGenreDto)
+                .toList();
+
+        when(authorService.findAll()).thenReturn(authorDtoList);
+        when(genreService.findAll()).thenReturn(genreDtoList);
+
+        mockMvc.perform(get("/book"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("book-create"))
+                .andExpect(model().attribute("authors", authorDtoList))
+                .andExpect(model().attribute("genres", genreDtoList));
+    }
+
+    @DisplayName("Should return book edit page")
+    @Test
+    void bookEditPage() throws Exception {
+
+        List<AuthorDto> authorDtoList = Stream.of(
+                        new Author(1L, "Author_1"),
+                        new Author(2L, "Author_2"),
+                        new Author(3L, "Author_3"))
+                .map(entityToDtoMapper::authorToAuthorDto)
+                .toList();
+
+        List<GenreDto> genreDtoList = Stream.of(
+                        new Genre(1L, "Genre_1"),
+                        new Genre(2L, "Genre_2"))
+                .map(entityToDtoMapper::genreToGenreDto)
+                .toList();
+
+        BookDto bookDto = entityToDtoMapper.bookToBookDto(
+                createExpectedBook(1L, "BookTitle_1", "Author_1", "Genre_1"));
+
+        when(bookService.findById(1L)).thenReturn(bookDto);
+
+        when(authorService.findAll()).thenReturn(authorDtoList);
+        when(genreService.findAll()).thenReturn(genreDtoList);
+
+        mockMvc.perform(get("/book/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("book-edit"))
+                .andExpect(model().attribute("book", dtoToDtoMapper.bookDtoToBookUpdateDto(bookDto)))
+                .andExpect(model().attribute("authors", authorDtoList))
+                .andExpect(model().attribute("genres", genreDtoList));
+    }
+
+
+    @DisplayName("Should redirect to all books page after create a new book")
     @Test
     void shouldReturnAllBooksPageAfterInsertNewBook() throws Exception {
 
-        mockMvc.perform(post("/book/add")
+        mockMvc.perform(post("/book")
                         .param("title", "New_Book_Title")
                         .param("authorId", "1")
                         .param("genreId", "3"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(ALL_BOOKS_PAGE));
 
-        verify(bookService, times(1)).create("New_Book_Title", 1L, 3L);
+        verify(bookService, times(1)).create(
+                new BookCreateDto("New_Book_Title", 1L, 3L)
+        );
+    }
+
+    @DisplayName("Should redirect to all books page after update a book")
+    @Test
+    void shouldReturnAllBooksPageAfterUpdateBook() throws Exception {
+
+        mockMvc.perform(put("/book", 2L)
+                        .param("id", "2")
+                        .param("title", "New_Book_Title_1")
+                        .param("authorId", "1")
+                        .param("genreId", "2"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(ALL_BOOKS_PAGE));
+
+        verify(bookService, times(1))
+                .update(
+                        new BookUpdateDto(2L, "New_Book_Title_1", 1L, 2L)
+                );
     }
 
     @DisplayName("Should redirect to all books page after delete book")
@@ -89,53 +172,5 @@ class BookControllerTest {
                 .andExpect(redirectedUrl(ALL_BOOKS_PAGE));
 
         verify(bookService, times(1)).deleteById(4L);
-    }
-
-    @DisplayName("Should return edit page")
-    @Test
-    void showEditPage() throws Exception {
-
-        List<AuthorDto> authorDtoList = Stream.of(
-                        new Author(1L, "Author_1"),
-                        new Author(2L, "Author_2"),
-                        new Author(3L, "Author_3"))
-                .map(mapper::authorToAuthorDto)
-                .toList();
-
-        List<GenreDto> genreDtoList = Stream.of(
-                        new Genre(1L, "Genre_1"),
-                        new Genre(2L, "Genre_2"))
-                .map(mapper::genreToGenreDto)
-                .toList();
-
-        BookDto bookDto = mapper.bookToBookDto(
-                createExpectedBook(1L, "BookTitle_1", "Author_1", "Genre_1"));
-
-        when(bookService.findById(1L)).thenReturn(bookDto);
-
-        when(authorService.findAll()).thenReturn(authorDtoList);
-        when(genreService.findAll()).thenReturn(genreDtoList);
-
-        mockMvc.perform(patch("/book/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("book-edit"))
-                .andExpect(model().attribute("book", bookDto))
-                .andExpect(model().attribute("authors", authorDtoList))
-                .andExpect(model().attribute("genres", genreDtoList));
-    }
-
-    @DisplayName("Should redirect to all books page after update book")
-    @Test
-    void shouldReturnAllBooksPageAfterUpdateBook() throws Exception {
-
-        mockMvc.perform(post("/book/{id}", 2L)
-                        .param("title", "New_Book_Title_1")
-                        .param("authorId", "1")
-                        .param("genreId", "2"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(ALL_BOOKS_PAGE));
-
-        verify(bookService, times(1))
-                .update(2L, "New_Book_Title_1", 1L, 2L);
     }
 }

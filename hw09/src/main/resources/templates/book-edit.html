@@ -11,30 +11,35 @@
 <body>
 <div class="container">
     <h4>Existing book edit:</h4>
-    <form class="form-inline" action="book-edit.html" th:method="post" th:action="@{/book/{id}(id=${book.id()})}">
+    <form class="form-inline" action="book-edit.html" th:method="put" th:action="@{/book}">
         <div class="form-group">
+
             <label for="id-input">ID:</label>
-            <input type="text" class="form-control" id="id-input" th:value="${book.id()}" readonly="readonly">
+            <input type="text" class="form-control" id="id-input" name="id" th:value="${book.id}" readonly="readonly">
 
             <label for="title-input">Title:</label>
-            <input type="text" class="form-control" id="title-input" name="title" th:value="${book.title()}"/>
+            <input type="text" class="form-control" id="title-input" name="title" th:value="${book.title}"/>
+
 
             <label for="author-input">Select author:</label>
             <select class="form-control" id="author-input" name="authorId">
                 <option value="0">select author </option>
                 <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"
-                        th:selected="${book.author().id() == author.id}"></option>
+                        th:selected="${book.authorId == author.id}"></option>
             </select>
 
             <label for="genre-input">Select genre:</label>
             <select class="form-control" id="genre-input" name="genreId">
                 <option value="0">select genre </option>
                 <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.name}"
-                        th:selected="${book.genre().id() == genre.id}"></option>
+                        th:selected="${book.genreId == genre.id}"></option>
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
+    <br>
+    <div class="alert alert-danger" th:if="${#fields.hasErrors('book.title')}"
+         th:errors="${book.title}"></div>
 </div>
 </body>
 </html>

@@ -3,7 +3,9 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.enums.Entity;
 import ru.otus.hw.enums.NotFoundMessage;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -52,23 +54,29 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public BookDto create(String title, long authorId, long genreId) {
-        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), authorId);
-        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), genreId);
+    public BookDto create(BookCreateDto bookCreateDto) {
+        if (bookCreateDto == null) {
+            throw new IllegalArgumentException("bookCreateDto is null");
+        }
+        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookCreateDto.getAuthorId());
+        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookCreateDto.getGenreId());
 
         return mapper.bookToBookDto(
-                bookRepository.save(new Book(0, title, author, genre))
+                bookRepository.save(new Book(0, bookCreateDto.getTitle(), author, genre))
         );
     }
 
     @Override
     @Transactional
-    public BookDto update(long bookId, String title, long authorId, long genreId) {
-        var book = checkAndGetEntity(bookRepository::findById, Entity.BOOK.getName(), bookId);
-        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), authorId);
-        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), genreId);
+    public BookDto update(BookUpdateDto bookUpdateDto) {
+        if (bookUpdateDto == null) {
+            throw new IllegalArgumentException("bookUpdateDto is null");
+        }
+        var book = checkAndGetEntity(bookRepository::findById, Entity.BOOK.getName(), bookUpdateDto.getId());
+        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookUpdateDto.getAuthorId());
+        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookUpdateDto.getGenreId());
 
-        book.setTitle(title);
+        book.setTitle(bookUpdateDto.getTitle());
         book.setAuthor(author);
         book.setGenre(genre);
 

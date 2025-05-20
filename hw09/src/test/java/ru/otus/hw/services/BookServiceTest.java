@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.enums.NotFoundMessage;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.mapper.EntityToDtoMapper;
@@ -68,7 +70,9 @@ class BookServiceTest {
 
     @Test
     void shouldCreateNewBook() {
-        var newBook = bookService.create("New_Book_Title", 1L, 3L);
+        var newBook = bookService.create(
+                new BookCreateDto("New_Book_Title", 1L, 3L)
+        );
         var expectedBook = createExpectedBook(newBook.id(),
                 "New_Book_Title", "Author_1", "Genre_3");
         var retrievedBook = bookService.findById(newBook.id());
@@ -81,7 +85,9 @@ class BookServiceTest {
 
     @Test
     void shouldSaveUpdatedBook() {
-        bookService.update(1L, "Updated_Book_Title", 1L, 1L);
+        bookService.update(
+                new BookUpdateDto(1L, "Updated_Book_Title", 1L, 1L)
+        );
         var actualBook = bookService.findById(1L);
         var expectedBook = createExpectedBook(1L, "Updated_Book_Title",
                 "Author_1", "Genre_1");
@@ -115,21 +121,24 @@ class BookServiceTest {
 
     @Test
     void shouldThrowsForNotExistingAuthor() {
-        assertThatThrownBy(() -> bookService.create("Book_Title", NON_EXIST_ID, 1L))
+        BookCreateDto bookCreateDto = new BookCreateDto("Book_Title", NON_EXIST_ID, 1L);
+        assertThatThrownBy(() -> bookService.create(bookCreateDto))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage(NotFoundMessage.AUTHOR.getMessage().formatted(NON_EXIST_ID));
     }
 
     @Test
     void shouldThrowsForNotExistingGenre() {
-        assertThatThrownBy(() -> bookService.create("Book_Title", 1L, NON_EXIST_ID))
+        BookCreateDto bookCreateDto = new BookCreateDto("Book_Title", 1L, NON_EXIST_ID);
+        assertThatThrownBy(() -> bookService.create(bookCreateDto))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage(NotFoundMessage.GENRE.getMessage().formatted(NON_EXIST_ID));
     }
 
     @Test
     void shouldThrowsForNotExistingBook() {
-        assertThatThrownBy(() -> bookService.update(NON_EXIST_ID, "Book_Title", 1L, 1L))
+        BookUpdateDto bookUpdateDto = new BookUpdateDto(NON_EXIST_ID, "Book_Title", 1L, 1L);
+        assertThatThrownBy(() -> bookService.update(bookUpdateDto))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage(NotFoundMessage.BOOK.getMessage().formatted(NON_EXIST_ID));
     }

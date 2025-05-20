@@ -130,9 +130,8 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <!-- Exclude generated MapStruct mappers -->
-                    <excludes>ru/otus/hw/mapper/**</excludes>
                     <configLocation>${checkstyle.config.url}</configLocation>
+                    <suppressionsLocation>src/main/resources/checkstyle-suppressions.xml</suppressionsLocation>
                 </configuration>
                 <executions>
                     <execution>

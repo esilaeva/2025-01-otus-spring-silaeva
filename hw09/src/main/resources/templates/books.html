@@ -29,10 +29,10 @@
             <td th:text="${book.author().fullName()}">Author_1</td>
             <td th:text="${book.genre().name()}">Genre_1</td>
             <td>
-                <form action="#" th:action="@{/book/{id}/comments(id=${book.id()})}" th:method="get">
+                <form action="books.html" th:action="@{/book/{id}/comments(id=${book.id()})}" th:method="get">
                     <button type="submit" class="btn btn-link">Comments</button>
                 </form>
-                <form action="#" th:action="@{/book/{id}(id=${book.id()})}" th:method="patch">
+                <form action="#" th:action="@{/book/{id}(id=${book.id()})}" th:method="get">
                     <button type="submit" class="btn btn-link">Edit</button>
                 </form>
                 <form action="#" th:action="@{/book/{id}(id=${book.id()})}" th:method="delete">
@@ -42,24 +42,8 @@
         </tr>
         </tbody>
     </table>
-    <h4>New Book:</h4>
-    <form class="form-inline" action="books.html" th:method="post" th:action="@{/book/add}">
-        <div class="form-group">
-            <label for="title-input">Title</label>
-            <input type="text" class="form-control" id="title-input" name="title" placeholder="Enter book title">
-            <label for="author-input">Select author:</label>
-            <select class="form-control" id="author-input" name="authorId">
-                <option value="0">select author</option>
-                <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"/>
-            </select>
-            <label for="genre-input">Select genre:</label>
-            <select class="form-control" id="genre-input" name="genreId">
-                <option value="0">select genre</option>
-                <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.name}"/>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Save</button>
-    </form>
+    <a href="/book" class="btn btn-primary" role="button">Create new book</a>
+
 </div>
 </body>
 </html>

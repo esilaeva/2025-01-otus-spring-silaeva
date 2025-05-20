@@ -11,16 +11,19 @@
 <body>
 <div class="container">
     <h4>Comment edit:</h4>
-    <form class="form-inline" action="comment-edit.html" th:method="post" th:action="@{/book/{bookId}/comment/{id}(bookId=${bookId},id=${comment.id()})}">
+    <form class="form-inline" action="comment-edit.html" th:method="put" th:action="@{/book/{bookId}/comment(bookId=${bookId})}">
         <div class="form-group">
             <label for="id-input">ID:</label>
-            <input type="text" class="form-control" id="id-input" th:value="${comment.id()}" readonly="readonly">
+            <input type="text" class="form-control" id="id-input" name="id" th:value="${comment.id}" readonly="readonly">
 
             <label for="title-input">Content:</label>
-            <input type="text" class="form-control" id="title-input" name="content" th:value="${comment.content()}"/>
+            <input type="text" class="form-control" id="title-input" name="content" th:value="${comment.content}"/>
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
+    <br>
+    <div class="alert alert-danger" th:if="${#fields.hasErrors('comment.content')}"
+         th:errors="${comment.content}"></div>
 </div>
 </body>
 </html>

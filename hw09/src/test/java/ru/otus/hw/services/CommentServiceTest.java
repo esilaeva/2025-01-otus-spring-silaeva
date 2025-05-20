@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.mapper.EntityToDtoMapper;
 
 import java.util.stream.Stream;
@@ -18,7 +20,7 @@ import static ru.otus.hw.utils.TestUtils.createComment;
 @SpringBootTest
 class CommentServiceTest {
 
-    private static final String IGNORED_FIELDS = "book";
+    private static final String IGNORED_FIELDS = "bookId";
 
     @Autowired
     private CommentService commentService;
@@ -62,7 +64,8 @@ class CommentServiceTest {
 
     @Test
     void shouldCreateNewCommentForBook() {
-        var newComment = commentService.create(1L, "New_Comment_for_BookTitle_1");
+        var commentCreateDto = new CommentCreateDto(1L, "New_Comment_for_BookTitle_1");
+        var newComment = commentService.create(commentCreateDto);
         var newCommentId = newComment.id();
         var actualComments = commentService.findByBookId(1L);
 
@@ -83,7 +86,8 @@ class CommentServiceTest {
 
     @Test
     void shouldUpdateComment() {
-        commentService.update(1L, "Updated_Comment_1_for_BookTitle_1");
+        var commentUpdateDto = new CommentUpdateDto(1L, "Updated_Comment_1_for_BookTitle_1");
+        commentService.update(commentUpdateDto);
         var actualComment = commentService.findByBookId(1L);
 
         var expectedComments = Stream.of(
