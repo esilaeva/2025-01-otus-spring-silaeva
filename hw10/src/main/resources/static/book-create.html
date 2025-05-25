@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Library</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="/js/book-create.js"></script>
+</head>
+<body>
+<div class="container">
+    <h4>Create a new book</h4>
+    <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+    <form class="form-inline" id="create-book-form">
+        <div class="form-group">
+            <label for="title-input">Title</label>
+            <input type="text" class="form-control" id="title-input"
+                   name="title" placeholder="Enter book title" required>
+
+            <label for="author-input">Select author:</label>
+            <select class="form-control" id="author-input" name="authorId" required>
+                <option value="0">Loading authors...</option>
+            </select>
+
+            <label for="genre-input">Select genre:</label>
+            <select class="form-control" id="genre-input" name="genreId" required>
+                <option value="0">Loading genres...</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+</body>
+</html>
