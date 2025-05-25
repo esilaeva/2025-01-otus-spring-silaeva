@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Comments for Book</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>Comments for Book</h2>
+    <p>Manage comments for the book. Add, edit, or remove comments as needed.</p>
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Comment</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="comments-body">
+        <!-- Comments dynamically populated here -->
+        </tbody>
+    </table>
+    <form class="form-inline" id="add-comment-form">
+        <div class="form-group">
+            <input type="text" class="form-control" id="book-id-input" readonly>
+            <input type="text" class="form-control" id="comment-input" placeholder="New comment">
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('bookId');
+
+        if (!bookId) {
+            alert('Book ID not found in URL.');
+            return;
+        }
+
+        // Initialize book ID input
+        document.getElementById('book-id-input').value = bookId;
+
+        // Load comments for the book
+        loadComments(bookId);
+
+        // Handle new comment submission
+        document.getElementById('add-comment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const content = document.getElementById('comment-input').value.trim();
+            if (!content) {
+                alert('Please enter a comment.');
+                return;
+            }
+
+            fetch('/api/v1/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bookId: parseInt(bookId), content: content })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to add comment.');
+                    return response.json();
+                })
+                .then(() => {
+                    document.getElementById('comment-input').value = '';
+                    loadComments(bookId); // Refresh the list
+                })
+                .catch(error => alert(error.message));
+        });
+    });
+
+    function loadComments(bookId) {
+        fetch(`/api/v1/book/${bookId}/comment`)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load comments.');
+                return response.json();
+            })
+            .then(comments => {
+                const tbody = document.getElementById('comments-body');
+                tbody.innerHTML = ''; // Clear existing rows
+
+                comments.forEach(comment => {
+                    const row = document.createElement('tr');
+
+                    // Comment ID
+                    const idCell = document.createElement('td');
+                    idCell.textContent = comment.id;
+                    row.appendChild(idCell);
+
+                    // Comment Content
+                    const contentCell = document.createElement('td');
+                    contentCell.textContent = comment.content;
+                    row.appendChild(contentCell);
+
+                    // Action Buttons
+                    const actionCell = document.createElement('td');
+                    const editLink = document.createElement('a');
+                    editLink.href = `comments-edit.html?commentId=${comment.id}`;
+                    editLink.className = 'btn btn-link';
+                    editLink.textContent = 'Edit';
+                    actionCell.appendChild(editLink);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-link';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.onclick = () => {
+                        if (confirm('Delete this comment?')) {
+                            fetch(`/api/v1/comment/${comment.id}`, { method: 'DELETE' })
+                                .then(response => {
+                                    if (!response.ok) throw new Error('Deletion failed.');
+                                    row.remove();
+                                })
+                                .catch(error => alert(error.message));
+                        }
+                    };
+                    actionCell.appendChild(deleteBtn);
+
+                    row.appendChild(actionCell);
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => alert(error.message));
+    }
+</script>
+</body>
+</html>
