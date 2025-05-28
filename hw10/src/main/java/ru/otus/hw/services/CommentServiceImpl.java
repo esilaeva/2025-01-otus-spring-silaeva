@@ -31,10 +31,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<CommentDto> findById(long id) {
+    public CommentDto findById(long id) {
 
-        return commentRepository.findById(id)
-                .map(entityToDtoMapper::commentToCommentDto);
+        return entityToDtoMapper.commentToCommentDto(
+                checkAndGetEntity(commentRepository::findById, Entity.COMMENT.getName(), id)
+        );
     }
 
     @Override
@@ -50,11 +51,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto create(CommentCreateDto commentCreateDto) {
-        if (commentCreateDto == null) {
-            throw new IllegalArgumentException("commentCreateDto is null");
-        }
-        long bookId = commentCreateDto.getBookId();
-        String commentContent = commentCreateDto.getContent();
+
+        long bookId = commentCreateDto.bookId();
+        String commentContent = commentCreateDto.content();
         var book = checkAndGetEntity(bookRepository::findById, Entity.BOOK.getName(), bookId);
         var savedComment = commentRepository.save(new Comment(0, commentContent, book));
 
@@ -64,11 +63,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto update(CommentUpdateDto commentUpdateDto) {
-        if (commentUpdateDto == null) {
-            throw new IllegalArgumentException("commentUpdateDto is null");
-        }
-        long id = commentUpdateDto.getId();
-        String newContent = commentUpdateDto.getContent();
+
+        long id = commentUpdateDto.id();
+        String newContent = commentUpdateDto.content();
         var comment = checkAndGetEntity(commentRepository::findById, Entity.COMMENT.getName(), id);
         comment.setContent(newContent);
 

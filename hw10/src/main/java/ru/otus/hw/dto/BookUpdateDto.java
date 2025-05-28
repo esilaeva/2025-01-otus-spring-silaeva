@@ -2,24 +2,19 @@ package ru.otus.hw.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class BookUpdateDto {
+public record BookUpdateDto(
 
-    private Long id;
+        @NotNull(message = "The book id field is required.")
+        Long id,
 
-    @NotBlank(message = "The book title should not be empty.")
-    private String title;
+        @NotBlank(message = "The book title should not be empty.")
+        String title,
 
-    @NotNull(message = "The author id field is required.")
-    private Long authorId;
+        @NotNull(message = "The author id field is required.")
+        Long authorId,
 
-    @NotNull(message = "The genre id field is required.")
-    private Long genreId;
-
+        @NotNull(message = "The genre id field is required.")
+        Long genreId
+) {
 }

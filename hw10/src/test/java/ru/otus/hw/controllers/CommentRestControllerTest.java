@@ -16,6 +16,8 @@ import ru.otus.hw.mapper.EntityToDtoMapper;
 import ru.otus.hw.services.CommentService;
 import ru.otus.hw.utils.TestUtils;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -27,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ComponentScan("ru.otus.hw.mapper")
 @WebMvcTest(CommentRestController.class)
 class CommentRestControllerTest {
+
+    private static final String JSON = "application/json";
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,7 +54,7 @@ class CommentRestControllerTest {
                         new GenreDto(1L, "Genre_Name")
                 ));
 
-        when(commentService.findById(1L)).thenReturn(Optional.of(commentDto));
+        when(commentService.findById(1L)).thenReturn(commentDto);
 
         mockMvc.perform(get("/api/v1/comment/{id}", 1L))
                 .andExpect(status().isOk())
@@ -70,7 +74,7 @@ class CommentRestControllerTest {
 
         mockMvc.perform(get("/api/v1/book/{id}/comment", 1L))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(commentDtoList)));
     }
 
@@ -91,7 +95,7 @@ class CommentRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentCreateDto)))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(commentDto)));
     }
 
@@ -111,7 +115,7 @@ class CommentRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentUpdateDto)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(commentDto)));
     }
 
@@ -124,7 +128,6 @@ class CommentRestControllerTest {
         verify(commentService, times(1)).deleteById(1L);
     }
 
-
     @Test
     @DisplayName("Should return 404 error if comment is not found")
     void returnNotFoundError() throws Exception {
@@ -132,11 +135,66 @@ class CommentRestControllerTest {
         when(commentService.findById(1L)).thenThrow(new EntityNotFoundException(
                 NotFoundMessage.COMMENT.getMessage().formatted(1L))
         );
-        var errorDto = new ErrorDto(404, NotFoundMessage.COMMENT.getMessage().formatted(1L));
+        var errorDto = new ErrorDto(404, List.of(NotFoundMessage.COMMENT.getMessage().formatted(1L)));
 
         mockMvc.perform(get("/api/v1/comment/{id}", 1L))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+
+    @Test
+    @DisplayName("Should return 400 error if comment content is empty when creating a comment")
+    void returnBadRequestWhenCommentContentIsNull() throws Exception {
+
+        var commentCreateDto = new CommentCreateDto(1L, null);
+        var wrongBody = objectMapper.writeValueAsString(commentCreateDto);
+
+        var errorDto = new ErrorDto(400, Collections.singletonList(
+                "The comment content should not be empty."
+        ));
+
+        mockMvc.perform(post("/api/v1/comment")
+                        .contentType(JSON)
+                        .content(wrongBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+    @Test
+    @DisplayName("Should return 400 error if comment content is empty when updating a comment")
+    void returnBadRequestIfAuthorAndGenreIsAbsent() throws Exception {
+
+        var commentUpdateDto = new CommentUpdateDto(null, "New_Content");
+        var wrongBody = objectMapper.writeValueAsString(commentUpdateDto);
+
+        var errorDto = new ErrorDto(400, Collections.singletonList(
+                "The comment id should not be empty."
+        ));
+
+        mockMvc.perform(put("/api/v1/comment")
+                        .contentType(JSON)
+                        .content(wrongBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+
+    @Test
+    @DisplayName("Should return 500 error if comment create dto is absent when creating a comment")
+    void returnInternalServerErrorIfCommentCreateDtoIsAbsent() throws Exception {
+
+        var errorDto = new ErrorDto(500, Collections.singletonList(
+                "Required request body is missing"
+        ));
+
+        mockMvc.perform(post("/api/v1/comment")
+                        .contentType(JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
     }
 }

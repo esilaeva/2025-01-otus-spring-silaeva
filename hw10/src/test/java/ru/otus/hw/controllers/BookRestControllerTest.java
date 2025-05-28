@@ -15,6 +15,8 @@ import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.mapper.EntityToDtoMapper;
 import ru.otus.hw.services.BookService;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
@@ -28,6 +30,8 @@ import static ru.otus.hw.utils.TestUtils.createExpectedBook;
 @ComponentScan("ru.otus.hw.mapper")
 @WebMvcTest(BookRestController.class)
 class BookRestControllerTest {
+
+    private static final String JSON = "application/json";
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,7 +60,7 @@ class BookRestControllerTest {
 
         mockMvc.perform(get("/api/v1/book"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(allBookDtoList)));
     }
 
@@ -75,7 +79,7 @@ class BookRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookCreateDto)))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(bookDto)));
     }
 
@@ -94,7 +98,7 @@ class BookRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookUpdateDto)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(bookDto)));
 
     }
@@ -117,11 +121,65 @@ class BookRestControllerTest {
                 new EntityNotFoundException(
                         NotFoundMessage.BOOK.getMessage().formatted(1L))
         );
-        var errorDto = new ErrorDto(404, NotFoundMessage.BOOK.getMessage().formatted(1L));
+        var errorDto = new ErrorDto(404,
+                List.of(NotFoundMessage.BOOK.getMessage().formatted(1L))
+        );
 
         mockMvc.perform(get("/api/v1/book/{id}", 1L))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/json"))
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+    @DisplayName("Should return 400 error if book title is empty when creating a book")
+    @Test
+    void returnBadRequestWhenTitleIsNull() throws Exception {
+
+        var bookCreateDto = new BookCreateDto(null, 2L, 2L);
+        var wrongBody = objectMapper.writeValueAsString(bookCreateDto);
+
+        var errorDto = new ErrorDto(400, Collections.singletonList("The book title should not be empty."));
+
+        mockMvc.perform(post("/api/v1/book")
+                .contentType(JSON)
+                .content(wrongBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+    @DisplayName("Should return 400 error if author and genre is absent when updating a book")
+    @Test
+    void returnBadRequestIfAuthorAndGenreIsAbsent() throws Exception {
+
+        var bookUpdateDto = new BookUpdateDto(1L, "New_Title", null, null);
+        var wrongBody = objectMapper.writeValueAsString(bookUpdateDto);
+
+        var errorDto = new ErrorDto(400, List.of(
+                "The author id field is required.",
+                "The genre id field is required."
+                ));
+
+        mockMvc.perform(put("/api/v1/book")
+                        .contentType(JSON)
+                        .content(wrongBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
+    }
+
+    @DisplayName("Should return 500 error if book create dto is absent when creating a book")
+    @Test
+    void returnInternalServerErrorIfBookCreateDtoIsAbsent() throws Exception {
+
+        var errorDto = new ErrorDto(500, Collections.singletonList(
+                "Required request body is missing"
+        ));
+
+        mockMvc.perform(post("/api/v1/book")
+                        .contentType(JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(errorDto)));
     }
 }

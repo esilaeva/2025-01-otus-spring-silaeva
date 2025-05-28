@@ -1,22 +1,20 @@
 package ru.otus.hw.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.otus.hw.dto.CommentCreateDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.CommentUpdateDto;
-import ru.otus.hw.enums.NotFoundMessage;
-import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.CommentService;
 
 import java.util.List;
@@ -31,8 +29,7 @@ public class CommentRestController {
     @GetMapping("/comment/{id}")
     public ResponseEntity<CommentDto> findById(@PathVariable long id) {
 
-        return ResponseEntity.ok(commentService.findById(id).orElseThrow(
-                () -> new EntityNotFoundException(NotFoundMessage.COMMENT.getMessage().formatted(id))));
+        return ResponseEntity.ok(commentService.findById(id));
     }
 
     @GetMapping("/book/{bookId}/comment")
@@ -42,7 +39,7 @@ public class CommentRestController {
     }
 
     @PostMapping("/comment")
-    public ResponseEntity<CommentDto> create(@Validated @RequestBody CommentCreateDto commentCreateDto) {
+    public ResponseEntity<CommentDto> create(@RequestBody @Valid CommentCreateDto commentCreateDto) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -50,7 +47,7 @@ public class CommentRestController {
     }
 
     @PutMapping("/comment")
-    public ResponseEntity<CommentDto> update(@Validated @RequestBody CommentUpdateDto commentUpdateDto) {
+    public ResponseEntity<CommentDto> update(@RequestBody @Valid CommentUpdateDto commentUpdateDto) {
 
         return ResponseEntity.ok(commentService.update(commentUpdateDto));
     }

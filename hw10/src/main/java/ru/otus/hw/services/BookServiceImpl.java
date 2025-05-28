@@ -54,26 +54,22 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public BookDto create(BookCreateDto bookCreateDto) {
-        if (bookCreateDto == null) {
-            throw new IllegalArgumentException("bookCreateDto is null");
-        }
-        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookCreateDto.getAuthorId());
-        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookCreateDto.getGenreId());
+
+        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookCreateDto.authorId());
+        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookCreateDto.genreId());
         return entityToDtoMapper.bookToBookDto(
-                bookRepository.save(new Book(0, bookCreateDto.getTitle(), author, genre))
+                bookRepository.save(new Book(0, bookCreateDto.title(), author, genre))
         );
     }
 
     @Override
     @Transactional
     public BookDto update(BookUpdateDto bookUpdateDto) {
-        if (bookUpdateDto == null) {
-            throw new IllegalArgumentException("bookUpdateDto is null");
-        }
-        var book = checkAndGetEntity(bookRepository::findById, Entity.BOOK.getName(), bookUpdateDto.getId());
-        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookUpdateDto.getAuthorId());
-        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookUpdateDto.getGenreId());
-        book.setTitle(bookUpdateDto.getTitle());
+
+        var book = checkAndGetEntity(bookRepository::findById, Entity.BOOK.getName(), bookUpdateDto.id());
+        var author = checkAndGetEntity(authorRepository::findById, Entity.AUTHOR.getName(), bookUpdateDto.authorId());
+        var genre = checkAndGetEntity(genreRepository::findById, Entity.GENRE.getName(), bookUpdateDto.genreId());
+        book.setTitle(bookUpdateDto.title());
         book.setAuthor(author);
         book.setGenre(genre);
 

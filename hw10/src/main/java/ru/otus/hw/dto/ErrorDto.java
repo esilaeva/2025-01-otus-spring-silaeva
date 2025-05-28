@@ -1,4 +1,6 @@
 package ru.otus.hw.dto;
 
-public record ErrorDto(Integer code, String message) {
+import java.util.List;
+
+public record ErrorDto(Integer code, List<String> errorMessages) {
 }

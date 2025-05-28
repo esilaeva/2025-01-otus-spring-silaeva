@@ -36,8 +36,6 @@ class CommentServiceTest {
         var expectedComment = createComment(1L, "Comment_1_for_BookTitle_1");
 
         assertThat(actualComment)
-                .isPresent()
-                .get()
                 .usingRecursiveComparison()
                 .ignoringFields(IGNORED_FIELDS)
                 .isEqualTo(mapper.commentToCommentDto(expectedComment));
