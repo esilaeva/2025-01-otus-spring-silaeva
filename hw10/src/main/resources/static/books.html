@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Library</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="/js/books.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>Book list</h2>
+    <p>This is books list of our library. You can delete, edit or remove any book and also can add a new book.</p>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Author</th>
+            <th>Genre</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="book-list">
+        <!-- Data will be populated by JavaScript -->
+        </tbody>
+    </table>
+    <a href="/book-create.html" class="btn btn-primary" role="button">Create new book</a>
+</div>
+</body>
+</html>
