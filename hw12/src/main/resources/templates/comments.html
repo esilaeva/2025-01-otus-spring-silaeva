@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Comments for book</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>List comments for book</h2>
+    <p>The list of comments for the book. You can add, remove or edit any of comment</p>
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Comment</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="comment : ${comments}">
+            <td th:text="${comment.id()}">1</td>
+            <td th:text="${comment.content()}">Comment_1</td>
+            <td>
+                <div class="btn-group">
+                    <form action="#" th:action="@{/comment/{id}(id=${comment.id()})}" th:method="get">
+                        <button type="submit" class="btn btn-link">Edit</button>
+                    </form>
+                    <form action="#" th:action="@{/book/{bookId}/comment/{id}(bookId=${bookId},id=${comment.id()})}"
+                          th:method="delete">
+                        <button type="submit" class="btn btn-link">Remove</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <form class="form-inline" action="comments.html" th:method="post" th:action="@{/comment}">
+        <div class="form-group row">
+            <label for="book-id-input">BookID:</label>
+            <input type="text" class="form-control" id="book-id-input" name="bookId" th:value="${bookId}"
+                   readonly="readonly">
+            <label for="comment-input">New comment:</label>
+            <input type="text" class="form-control" id="comment-input" placeholder="Enter a new comment" name="content">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+</body>
+</html>
