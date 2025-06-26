@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 // https://docs.spring.io/spring-security/reference/servlet/authorization/acls.html
 @Configuration
 @EnableMethodSecurity
-public class AclConfig {
+public class AclConfiguration {
 
     @Bean
     static MethodSecurityExpressionHandler expressionHandler(AclPermissionEvaluator aclPermissionEvaluator) {

@@ -13,3 +13,6 @@ spring:
     hiddenmethod:
       filter:
         enabled: true
+  h2:
+    console:
+      enabled: true

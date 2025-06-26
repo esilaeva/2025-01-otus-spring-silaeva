@@ -172,9 +172,7 @@ class BookControllerTest {
                 .andExpect(redirectedUrl(ALL_BOOKS_PAGE));
 
         verify(bookService, times(1))
-                .update(
-                        new BookUpdateDto(2L, "New_Book_Title_1", 1L, 2L)
-                );
+                .update(new BookUpdateDto(2L, "New_Book_Title_1", 1L, 2L));
     }
 
     @DisplayName("Should redirect to all books page after delete book")

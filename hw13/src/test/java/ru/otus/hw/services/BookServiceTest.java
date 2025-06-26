@@ -1,12 +1,16 @@
 package ru.otus.hw.services;
 
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookCreateDto;
@@ -14,6 +18,7 @@ import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.enums.NotFoundMessage;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.mapper.EntityToDtoMapper;
+import ru.otus.hw.security.services.AclServiceWrapperService;
 
 import java.util.stream.Stream;
 
@@ -32,12 +37,30 @@ class BookServiceTest {
 
     private static final String[] FIELDS_TO_COMPARE = {"id", "title", "author.fullName", "genre.name"};
 
+    private static final RecursiveComparisonConfiguration RECURSIVE_COMPARISON_CONFIGURATION =
+            RecursiveComparisonConfiguration.builder()
+                    .withComparedFields(FIELDS_TO_COMPARE)
+                    .build();
+
     @Autowired
     private BookService bookService;
 
     @Autowired
     private EntityToDtoMapper mapper;
 
+    @MockitoBean
+    private AclServiceWrapperService aclServiceWrapperService;
+
+    @MockitoBean
+    private PermissionEvaluator permissionEvaluator;
+
+
+    @BeforeEach
+    void bypassAuthorization() {
+        // For business logic tests, we bypass security checks
+        Mockito.when(permissionEvaluator.hasPermission(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(true);
+    }
 
     @Test
     void shouldReturnCorrectBookById() {
@@ -53,6 +76,7 @@ class BookServiceTest {
 
     @Test
     void shouldReturnCorrectBooksList() {
+
         var actualBooks = bookService.findAll();
         var expectedBooks = Stream.of(
                         createExpectedBook(1L, "BookTitle_1", "Author_1", "Genre_1"),
@@ -65,9 +89,7 @@ class BookServiceTest {
                 .isNotEmpty()
                 .hasSize(3)
                 .usingRecursiveFieldByFieldElementComparator(
-                        RecursiveComparisonConfiguration.builder()
-                                .withComparedFields(FIELDS_TO_COMPARE)
-                                .build())
+                        RECURSIVE_COMPARISON_CONFIGURATION)
                 .containsExactlyInAnyOrderElementsOf(expectedBooks);
     }
 
@@ -106,6 +128,7 @@ class BookServiceTest {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void shouldDeleteBookById() {
+
         bookService.deleteById(3L);
 
         var actualBooks = bookService.findAll();
@@ -118,10 +141,7 @@ class BookServiceTest {
         assertThat(actualBooks)
                 .isNotEmpty()
                 .hasSize(2)
-                .usingRecursiveFieldByFieldElementComparator(
-                        RecursiveComparisonConfiguration.builder()
-                                .withComparedFields(FIELDS_TO_COMPARE)
-                                .build())
+                .usingRecursiveFieldByFieldElementComparator(RECURSIVE_COMPARISON_CONFIGURATION)
                 .containsExactlyInAnyOrderElementsOf(expectedBooks);
     }
 

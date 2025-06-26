@@ -78,7 +78,8 @@ public class BookController {
 
     @PutMapping("/book")
     public String updateBook(@Validated @ModelAttribute(ATTRIBUTE_BOOK) BookUpdateDto bookUpdateDto,
-                             BindingResult bindingResult, Model model) {
+                             BindingResult bindingResult,
+                             Model model) {
 
         if (bindingResult.hasErrors()) {
             List<AuthorDto> authors = authorService.findAll();
@@ -97,7 +98,8 @@ public class BookController {
 
     @PostMapping("/book")
     public String insertBook(@Validated @ModelAttribute(ATTRIBUTE_BOOK) BookCreateDto bookCreateDto,
-                             BindingResult bindingResult, Model model) {
+                             BindingResult bindingResult,
+                             Model model) {
 
         if (bindingResult.hasErrors()) {
 
@@ -121,5 +123,4 @@ public class BookController {
 
         return REDIRECT_TO_MAIN_PAGE;
     }
-
 }
