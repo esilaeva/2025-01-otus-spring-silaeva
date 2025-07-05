@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: hw14-spring-batch
+
+# Primary DataSource Configuration (for Spring Batch Repository)
+# We are using H2 in-memory for the batch metadata
+  datasource:
+    url: jdbc:h2:mem:batchdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+# Spring Batch Configuration
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false # do not run jobs at startup
+
+# JPA / Hibernate Configuration (for PostgreSQL)
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # The specific SQL dialect for PostgreSQL
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Makes the logged SQL much more readable
+        format_sql: true
+
+#  MongoDB Configuration
+  data:
+    mongodb:
+      uri: mongodb://root:your_strong_mongo_password@localhost:27017
+      database: test
+
+  shell:
+    interactive:
+      enabled: true
+    script:
+      enabled: true
+
+  liquibase:
+    change-log: classpath:db/changelog/master.xml
+    url: jdbc:postgresql://localhost:5432/postgres
+    user: admin
+    password: your_strong_postgres_password
+
+#  PostgreSQL DataSource Configuration - custom namespace to define our secondary datasource
+datasource-postgres:
+  url: jdbc:postgresql://localhost:5432/postgres
+  username: admin
+  password: your_strong_postgres_password
+  driver-class-name: org.postgresql.Driver
