@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-1" author="esilaeva">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM authors</sqlCheck>
+        </preConditions>
+        <insert tableName="authors">
+            <column name="id" value="1"/>
+            <column name="full_name">Author_1</column>
+        </insert>
+        <insert tableName="authors">
+            <column name="id" value="2"/>
+            <column name="full_name">Author_2</column>
+        </insert>
+        <insert tableName="authors">
+            <column name="id" value="3"/>
+            <column name="full_name">Author_3</column>
+        </insert>
+        <rollback>
+            <delete tableName="authors">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="data-2" author="esilaeva">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM genres</sqlCheck>
+        </preConditions>
+        <insert tableName="genres">
+            <column name="id" value="1"/>
+            <column name="name">Genre_1</column>
+        </insert>
+        <insert tableName="genres">
+            <column name="id" value="2"/>
+            <column name="name">Genre_2</column>
+        </insert>
+        <insert tableName="genres">
+            <column name="id" value="3"/>
+            <column name="name">Genre_3</column>
+        </insert>
+        <insert tableName="genres">
+            <column name="id" value="4"/>
+            <column name="name">Genre_4</column>
+        </insert>
+        <insert tableName="genres">
+            <column name="id" value="5"/>
+            <column name="name">Genre_5</column>
+        </insert>
+        <insert tableName="genres">
+            <column name="id" value="6"/>
+            <column name="name">Genre_6</column>
+        </insert>
+        <rollback>
+            <delete tableName="genres">
+                <where>id BETWEEN 1 AND 6</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="data-3" author="esilaeva">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM books</sqlCheck>
+        </preConditions>
+        <insert tableName="books">
+            <column name="id" value="1"/>
+            <column name="title">BookTitle_1</column>
+            <column name="author_id">1</column>
+        </insert>
+        <insert tableName="books">
+            <column name="id" value="2"/>
+            <column name="title">BookTitle_2</column>
+            <column name="author_id">2</column>
+        </insert>
+        <insert tableName="books">
+            <column name="id" value="3"/>
+            <column name="title">BookTitle_3</column>
+            <column name="author_id">3</column>
+        </insert>
+        <insert tableName="books">
+            <column name="id" value="4"/>
+            <column name="title">BookTitle_4</column>
+            <column name="author_id">1</column>
+        </insert>
+        <insert tableName="books">
+            <column name="id" value="5"/>
+            <column name="title">BookTitle_5</column>
+            <column name="author_id">2</column>
+        </insert>
+        <insert tableName="books">
+            <column name="id" value="6"/>
+            <column name="title">BookTitle_6</column>
+            <column name="author_id">3</column>
+        </insert>
+        <rollback>
+            <delete tableName="books">
+                <where>id BETWEEN 1 AND 6</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="data-4" author="esilaeva">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM books_genres</sqlCheck>
+        </preConditions>
+        <insert tableName="books_genres">
+            <column name="book_id">1</column>
+            <column name="genre_id">1</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">1</column>
+            <column name="genre_id">2</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">2</column>
+            <column name="genre_id">3</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">2</column>
+            <column name="genre_id">4</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">3</column>
+            <column name="genre_id">5</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">3</column>
+            <column name="genre_id">6</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">4</column>
+            <column name="genre_id">1</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">4</column>
+            <column name="genre_id">2</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">5</column>
+            <column name="genre_id">3</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">5</column>
+            <column name="genre_id">4</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">6</column>
+            <column name="genre_id">5</column>
+        </insert>
+        <insert tableName="books_genres">
+            <column name="book_id">6</column>
+            <column name="genre_id">6</column>
+        </insert>
+        <rollback>
+            <delete tableName="books_genres">
+                <where>(book_id BETWEEN 1 AND 6) AND (genre_id BETWEEN 1 AND 6)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
