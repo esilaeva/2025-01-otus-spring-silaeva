@@ -12,7 +12,7 @@ import java.util.List;
 public class MongoBookService {
 
     private final MongoBookRepository mongoBookRepository;
-    
+
     public List<MongoBook> getBooks() {
         return mongoBookRepository.findAll();
     }

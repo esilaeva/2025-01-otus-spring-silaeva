@@ -25,7 +25,7 @@ public class AuthorProcessor implements ItemProcessor<Author, MongoAuthor> {
     public void beforeStep(StepExecution stepExecution) {
         // Get the execution context from the job, which is shared across all steps
         jobExecutionContext = stepExecution.getJobExecution().getExecutionContext();
-        // Initialize the map in the context for the first time
+        // Initialize the map in the context if it's the first time
         if (!jobExecutionContext.containsKey(AUTHOR_ID_MAP)) {
             jobExecutionContext.put(AUTHOR_ID_MAP, new ConcurrentHashMap<Long, String>());
         }
@@ -33,7 +33,7 @@ public class AuthorProcessor implements ItemProcessor<Author, MongoAuthor> {
 
     @Override
     public MongoAuthor process(Author authorSqlItem) throws Exception {
-        // Retrieve the map from the context for this processing chunk
+        // Retrieve the map from the context for processing chunk
         Map<Long, String> authorIdMap = (Map<Long, String>) jobExecutionContext.get(AUTHOR_ID_MAP);
 
         MongoAuthor mongoAuthor = new MongoAuthor();

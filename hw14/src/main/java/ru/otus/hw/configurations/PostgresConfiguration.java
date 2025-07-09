@@ -16,14 +16,14 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "ru.otus.hw.postgres.repository",
+        basePackages = "ru.otus.hw.postgres.repositories",
         entityManagerFactoryRef = "postgresEntityManagerFactory",
         transactionManagerRef = "postgresTransactionManager"
 )
 public class PostgresConfiguration {
 
     @Bean
-    @ConfigurationProperties("datasource-postgres")
+    @ConfigurationProperties(prefix = "datasource-postgres")
     public DataSourceProperties postgresDataSourceProperties() {
         return new DataSourceProperties();
     }

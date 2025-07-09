@@ -2,13 +2,18 @@ package ru.otus.hw.batch.job;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.MongoItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import ru.otus.hw.batch.job.processors.AuthorProcessor;
 import ru.otus.hw.batch.job.processors.BookProcessor;
@@ -22,6 +27,17 @@ import ru.otus.hw.postgres.model.Genre;
 
 @Configuration
 public class JobConfiguration {
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+        taskExecutor.setCorePoolSize(2);
+        taskExecutor.setMaxPoolSize(5);
+        taskExecutor.setThreadNamePrefix("parallel-flow-");
+        taskExecutor.initialize();
+        return taskExecutor;
+    }
 
     @Bean
     public Step authorTransfer(JobRepository jobRepository,
@@ -54,6 +70,29 @@ public class JobConfiguration {
     }
 
     @Bean
+    public Flow authorFlow(Step authorTransfer) {
+        return new FlowBuilder<SimpleFlow>("authorFlow")
+                .start(authorTransfer)
+                .build();
+    }
+
+    @Bean
+    public Flow genreFlow(Step genreTransfer) {
+        return new FlowBuilder<SimpleFlow>("genreFlow")
+                .start(genreTransfer)
+                .build();
+    }
+
+    @Bean
+    public Flow authorGenreFlow(Flow authorFlow, Flow genreFlow) {
+        return new FlowBuilder<SimpleFlow>("authorGenreFlow")
+                .split(taskExecutor())
+                .add(authorFlow, genreFlow)
+                .build();
+    }
+
+
+    @Bean
     public Step bookTransfer(JobRepository jobRepository,
                              PlatformTransactionManager transactionManager,
                              JpaPagingItemReader<Book> bookReader,
@@ -70,15 +109,14 @@ public class JobConfiguration {
 
     @Bean
     public Job transferJob(JobRepository jobRepository,
-                           Step authorTransfer,
-                           Step genreTransfer,
+                           Flow authorGenreFlow,
                            Step bookTransfer,
                            JobStateListener jobStateListener) {
 
         return new JobBuilder("transferJob", jobRepository)
-                .start(authorTransfer)
-                .next(genreTransfer)
+                .start(authorGenreFlow)
                 .next(bookTransfer)
+                .build()
                 .listener(jobStateListener)
                 .build();
     }

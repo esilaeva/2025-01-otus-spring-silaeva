@@ -3,7 +3,6 @@ package ru.otus.hw.batch.job.processors;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ public class BookProcessor implements ItemProcessor<Book, MongoBook> {
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
         // Retrieve the cache maps populated by previous steps
-        ExecutionContext jobExecutionContext = stepExecution.getJobExecution().getExecutionContext();
+        var jobExecutionContext = stepExecution.getJobExecution().getExecutionContext();
         this.authorIdMap = (Map<Long, String>) jobExecutionContext.get("authorIdMap");
         this.genreIdMap = (Map<Long, String>) jobExecutionContext.get("genreIdMap");
     }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.postgres.dto.BookDto;
 import ru.otus.hw.postgres.mapper.BookMapper;
-import ru.otus.hw.postgres.repository.PostgresBookRepository;
+import ru.otus.hw.postgres.repositories.PostgresBookRepository;
 
 import java.util.List;
 
@@ -16,7 +16,12 @@ public class PostgresBookService {
     private final PostgresBookRepository bookRepository;
 
     private final BookMapper bookMapper;
-    
+
+    @Transactional(readOnly = true)
+    public long bookCount() {
+        return bookRepository.count();
+    }
+
     @Transactional(readOnly = true)
     public List<BookDto> getBooks() {
         return bookRepository.findAll().stream()

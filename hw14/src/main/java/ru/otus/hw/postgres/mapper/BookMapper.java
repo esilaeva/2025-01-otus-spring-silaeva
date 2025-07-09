@@ -10,4 +10,5 @@ import ru.otus.hw.postgres.model.Book;
 public interface BookMapper {
 
     BookDto toDto(Book book);
+
 }

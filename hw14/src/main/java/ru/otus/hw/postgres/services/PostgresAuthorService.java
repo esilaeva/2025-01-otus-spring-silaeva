@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.postgres.dto.AuthorDto;
 import ru.otus.hw.postgres.mapper.AuthorMapper;
-import ru.otus.hw.postgres.repository.PostgresAuthorRepository;
+import ru.otus.hw.postgres.repositories.PostgresAuthorRepository;
 
 import java.util.List;
 

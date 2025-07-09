@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - include:
+      file: /schema/01-starting-schema.sql
+      relativeToChangelogFile: true
+  - include:
+      file: /data/01-starting-data.sql
+      relativeToChangelogFile: true
+      context: "test"

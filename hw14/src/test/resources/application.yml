@@ -1,0 +1,39 @@
+# Configuration for the test environment (src/test/resources/application.yml)
+
+spring:
+  # === LIQUIBASE CONFIGURATION FOR TESTS ===
+  liquibase:
+    # We now explicitly enable Liquibase to create our schema in the test container.
+    enabled: true
+    # Point to our dedicated changelog for tests.
+    change-log: classpath:db/changelog/test-master.yaml
+    # NOTE: URL, user, pass are not needed. Liquibase will automatically use the
+    # primary datasource, which our Initializer correctly points to the Testcontainer.
+
+  # === JPA (Hibernate) settings for the PostgreSQL test container ===
+  jpa:
+    show-sql: true
+    hibernate:
+      # Change from 'create-drop' to 'validate'.
+      # We now want Hibernate to VALIDATE that the schema created by Liquibase
+      # matches our @Entity models.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true # Makes the logged SQL more readable.
+
+  # Spring Batch settings for the test environment
+  batch:
+    # This prevents any batch jobs from running automatically on application startup.
+    job:
+      enabled: false
+    jdbc:
+      # 'always': Ensures the Spring Batch metadata tables are also created
+      # in our PostgreSQL test container.
+      initialize-schema: always
+
+logging:
+  level:
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG # Logs SQL statements
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Logs SQL statement parameters

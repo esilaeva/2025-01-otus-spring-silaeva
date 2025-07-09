@@ -12,7 +12,7 @@ import java.util.List;
 public class MongoAuthorService {
 
     private final MongoAuthorRepository mongoAuthorRepository;
-    
+
     public List<MongoAuthor> getAuthors() {
         return mongoAuthorRepository.findAll();
     }
