@@ -1,10 +1,6 @@
 package ru.otus.hw.batch.job;
 
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.Job;
+import org.junit.jupiter.api.*;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.test.JobLauncherTestUtils;
@@ -12,10 +8,8 @@ import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.support.TestPropertySourceUtils;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,12 +29,12 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+//https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/
 @SpringBootTest
-@SpringBatchTest // Provides utilities like JobLauncherTestUtils, JobRepositoryTestUtils, etc.
-@Testcontainers  // Enables JUnit 5 support for Testcontainers
-@ContextConfiguration(initializers = TransferJobIntegrationTest.Initializer.class)
+@SpringBatchTest
+@Testcontainers
 @DisplayName("Data transfer job: ")
-class TransferJobIntegrationTest {
+class JobIntegrationTest {
 
     private static final long EXPECTED_AUTHORS_COUNT = 2L;
     private static final long EXPECTED_GENRES_COUNT = 3L;
@@ -58,27 +52,12 @@ class TransferJobIntegrationTest {
         mongo.start();
     }
 
-    // This inner class dynamically sets the database connection properties
-    // for Spring before the context is created.
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(@NotNull ConfigurableApplicationContext applicationContext) {
-            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-                    applicationContext,
-                    // Point the PRIMARY datasource to the test container
-                    "spring.datasource.url=" + postgres.getJdbcUrl(),
-                    "spring.datasource.username=" + postgres.getUsername(),
-                    "spring.datasource.password=" + postgres.getPassword(),
-                    "spring.datasource.driver-class-name=org.postgresql.Driver",
-
-                    // Nullify the secondary datasource config from the main application.yml
-                    // to avoid any potential conflicts or confusion during the test run.
-                    "datasource-postgres.url=",
-
-                    // Configure MongoDB from its test container
-                    "spring.data.mongodb.uri=" + mongo.getReplicaSetUrl()
-            );
-        }
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.data.mongodb.uri", mongo::getReplicaSetUrl);
     }
 
     @Autowired
@@ -124,7 +103,7 @@ class TransferJobIntegrationTest {
         // when: Check and launch the job
         assertThat(jobLauncherTestUtils.getJob())
                 .isNotNull()
-                .extracting(Job::getName)
+                .extracting("name")
                 .isEqualTo("transferJob");
 
         JobExecution jobExecution = jobLauncherTestUtils.launchJob(new JobParametersBuilder()
@@ -146,8 +125,8 @@ class TransferJobIntegrationTest {
                 .as("Check that 'The Great Gatsby' was migrated correctly")
                 .isPresent()
                 .hasValueSatisfying(migratedBook -> {
-                            assertThat(migratedBook.getMongoAuthor()
-                                    .getFullName())
+                            assertThat(migratedBook.getMongoAuthor())
+                                    .extracting("fullName")
                                     .isEqualTo("F. Scott Fitzgerald");
 
                             assertThat(migratedBook.getMongoGenres())
