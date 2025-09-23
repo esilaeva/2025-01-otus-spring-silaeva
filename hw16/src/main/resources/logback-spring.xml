@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 1. Include Spring Boot default configurations -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- 2. Log directory setup -->
+    <property name="LOGS_PATH" value="./logs"/>
+
+    <!-- 3. File Appender Configuration -->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Active log file location -->
+        <file>${LOGS_PATH}/current-session.log</file>
+
+        <!-- 4. Rolling Policy Configuration -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- This is the pattern for archived log files,
+                 using time unit from the smallest time-related field 'dd' (in our case),
+                 daily rollover and GZIP compression -->
+            <fileNamePattern>${LOGS_PATH}/archive/library-session-%d{yyyy-MMMM-dd}.log.gz</fileNamePattern>
+            <!-- a rolling window of log history for 30 days -->
+            <maxHistory>30</maxHistory>
+            <!-- Maximum total size of archived logs before deletion -->
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <!-- 5. Log Formatting -->
+        <encoder>
+            <!-- Uses Spring Boot's default file log pattern -->
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 6. Root Logger Configuration -->
+    <root level="INFO"> <!-- Default log level for all packages -->
+        <!-- Send logs to the console -->
+        <appender-ref ref="CONSOLE"/>
+        <!-- Send logs to our custom-rolling file appender -->
+        <appender-ref ref="ROLLING_FILE"/>
+    </root>
+
+    <!-- 7. Package-Specific Logging -->
+    <logger name="org.springframework.web" level="DEBUG"/> <!-- DEBUG for Spring Web -->
+
+</configuration>
