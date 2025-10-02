@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Library</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h4>Existing book edit:</h4>
+    <form class="form-inline" action="book-edit.html" th:method="put" th:action="@{/book}">
+        <div class="form-group">
+
+            <label for="id-input">ID:</label>
+            <input type="text" class="form-control" id="id-input" name="id" th:value="${book.id}" readonly="readonly">
+
+            <label for="title-input">Title:</label>
+            <input type="text" class="form-control" id="title-input" name="title" th:value="${book.title}"/>
+
+
+            <label for="author-input">Select author:</label>
+            <select class="form-control" id="author-input" name="authorId">
+                <option value="0">select author </option>
+                <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"
+                        th:selected="${book.authorId == author.id}"></option>
+            </select>
+
+            <label for="genre-input">Select genre:</label>
+            <select class="form-control" id="genre-input" name="genreId">
+                <option value="0">select genre </option>
+                <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.name}"
+                        th:selected="${book.genreId == genre.id}"></option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+    <br>
+    <div class="alert alert-danger" th:if="${#fields.hasErrors('book.title')}"
+         th:errors="${book.title}"></div>
+</div>
+</body>
+</html>
