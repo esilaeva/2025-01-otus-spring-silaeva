@@ -1,0 +1,115 @@
+# =====================================================================================
+#  Service: Exposes the MySQL Pod to other services in the cluster.
+# =====================================================================================
+# Specifies the API version for the Service object. 'v1' is the core API group.
+apiVersion: v1
+# Defines the type of Kubernetes object. In this case, it's a Service.
+kind: Service
+metadata:
+  # The name of the Service. This will be used for DNS discovery within the cluster.
+  name: library-db
+  # Labels are key/value pairs that are attached to objects. They are used to specify identifying attributes.
+  labels:
+    app: library-db
+    tier: database
+spec:
+  # Defines the port mapping for the Service.
+  ports:
+    # The port that other services in the cluster will use to connect to MySQL.
+    - port: 3306
+      # The port on the Pod that the service will forward traffic to.
+      targetPort: 3306
+  # Selects the Pods that this Service will route traffic to, based on their labels.
+  selector:
+    app: library-db
+    tier: database
+  # By setting clusterIP to None, we create a "headless" service.
+  # This allows for direct DNS resolution to the pod IPs, which is useful for stateful applications.
+  clusterIP: None
+---
+# =====================================================================================
+#  PersistentVolumeClaim (PVC): Requests storage for the MySQL database.
+# =====================================================================================
+# Specifies the API version for the PVC object.
+apiVersion: v1
+# Defines the type of Kubernetes object. A PVC is a request for storage.
+kind: PersistentVolumeClaim
+metadata:
+  # The name of the PVC. This is referenced by the Deployment to mount the volume.
+  name: mysql-pv-claim
+  labels:
+    app: library-db
+    tier: database
+spec:
+  # Defines the access mode for the volume. ReadWriteOnce means the volume can be mounted as read-write by a single Node.
+  accessModes:
+    - ReadWriteOnce
+  # Specifies the amount of storage to request.
+  resources:
+    requests:
+      # Request 1Gi of storage. This will be provisioned by the cluster's default StorageClass.
+      storage: 1Gi
+---
+# =====================================================================================
+#  Deployment: Manages the MySQL Pod and its lifecycle.
+# =====================================================================================
+# For production, consider using a StatefulSet for stateful applications like MySQL.
+# Specifies the API version for the Deployment object. 'apps/v1' is the API group for application-level objects.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library-db
+  labels:
+    app: library-db
+    tier: database
+spec:
+  # The selector defines which Pods are managed by this Deployment.
+  selector:
+    matchLabels:
+      app: library-db
+  # The deployment strategy. 'Recreate' will terminate the old pod before creating a new one on updates.
+  strategy:
+    type: Recreate
+  # The template for the Pods that will be created by this Deployment.
+  template:
+    metadata:
+      # The labels applied to each Pod. These must match the selectors in the Service and Deployment.
+      labels:
+        app: library-db
+        tier: database
+    spec:
+      # The list of containers to run in the Pod.
+      containers:
+        - name: library-db
+          # The Docker image to use for the container. 'latest' will pull the most recent version.
+          image: bitnami/mysql:9.4.0
+          # The policy for pulling the image. 'IfNotPresent' will only pull the image if it's not already on the node.
+          imagePullPolicy: "IfNotPresent"
+          # Environment variables passed to the container.
+          env:
+            # Consider using Kubernetes Secrets for production environments.
+            - name: MYSQL_ROOT_PASSWORD
+              value: rootpassword
+            - name: MYSQL_USER
+              value: mysql
+            - name: MYSQL_PASSWORD
+              value: mysql
+            - name: MYSQL_DATABASE
+              value: db
+          # The ports that the container exposes.
+          ports:
+            - containerPort: 3306
+              name: mysql
+          # Mounts the persistent volume into the container's filesystem.
+          volumeMounts:
+            # The path within the container where the volume should be mounted. This is the standard data directory for MySQL.
+            - mountPath: /var/lib/mysql
+              # The name of the volume to mount. This must match a volume defined in the 'volumes' section.
+              name: mysql-persistence-storage
+      # The list of volumes available to the Pod.
+      volumes:
+        - name: mysql-persistence-storage
+          # Specifies that the volume is a PersistentVolumeClaim.
+          persistentVolumeClaim:
+            # The name of the PVC to use for this volume. This must match the name of the PVC defined above.
+            claimName: mysql-pv-claim

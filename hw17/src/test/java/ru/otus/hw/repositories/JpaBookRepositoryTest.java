@@ -1,0 +1,113 @@
+package ru.otus.hw.repositories;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import ru.otus.hw.models.Author;
+import ru.otus.hw.models.Book;
+import ru.otus.hw.models.Genre;
+import ru.otus.hw.utils.TestUtils;
+
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DisplayName("JPA based repository for working with books ")
+@DataJpaTest
+class JpaBookRepositoryTest {
+
+    private static final long FIRST_BOOK_ID = 1L;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+
+    private static Stream<Arguments> provideBooksIndexes() {
+        return TestUtils.generateIndexesSequence(1, 3).map(Arguments::of);
+    }
+
+    @DisplayName("should load the book by id")
+    @ParameterizedTest(name = "Book id is: {0}")
+    @MethodSource("provideBooksIndexes")
+    void shouldReturnCorrectBookById(long index) {
+        var actualBook = bookRepository.findById(index);
+        var expectedBook = testEntityManager.find(Book.class, index);
+
+        assertThat(actualBook)
+                .isPresent()
+                .get()
+                .usingRecursiveComparison()
+                .isEqualTo(expectedBook);
+    }
+
+    @DisplayName("should load a list of all books")
+    @Test
+    void shouldReturnCorrectBooksList() {
+        var actualBooks = bookRepository.findAll();
+        var expectedBooks = TestUtils.generateIndexesSequence(1, 3)
+                .map(id -> testEntityManager.find(Book.class, id))
+                .toList();
+
+        assertThat(actualBooks).containsExactlyInAnyOrderElementsOf(expectedBooks);
+    }
+
+    @DisplayName("should save a new book")
+    @Test
+    void shouldSaveNewBook() {
+        var author = testEntityManager.find(Author.class, 1L);
+        var genre = testEntityManager.find(Genre.class, 1L);
+
+        var expectedBook = new Book(0, "BookTitle_10500", author, genre);
+        var returnedBook = bookRepository.save(expectedBook);
+
+        assertThat(returnedBook).isNotNull()
+                .matches(book -> book.getId() > 0)
+                .usingRecursiveComparison()
+                .ignoringExpectedNullFields()
+                .isEqualTo(expectedBook);
+
+        assertThat(testEntityManager.find(Book.class, returnedBook.getId()))
+                .isNotNull()
+                .isEqualTo(returnedBook);
+    }
+
+    @DisplayName("should save a modified book")
+    @Test
+    void shouldSaveUpdatedBook() {
+        var author = testEntityManager.find(Author.class, 2L);
+        var genre = testEntityManager.find(Genre.class, 2L);
+
+        var expectedBook = new Book(FIRST_BOOK_ID, "BookTitle_10500", author, genre);
+        var returnedBook = bookRepository.save(expectedBook);
+
+        assertThat(returnedBook).isNotNull()
+                .matches(book -> book.getId() > 0)
+                .usingRecursiveComparison()
+                .ignoringExpectedNullFields()
+                .isEqualTo(expectedBook);
+
+        assertThat(testEntityManager.find(Book.class, returnedBook.getId())).isEqualTo(returnedBook);
+    }
+
+    @DisplayName("should delete a book by id")
+    @Test
+    void shouldDeleteBook() {
+        assertThat(bookRepository.findById(FIRST_BOOK_ID)).isPresent();
+        bookRepository.deleteById(FIRST_BOOK_ID);
+        assertThat(bookRepository.findById(FIRST_BOOK_ID)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("should return empty when book on ID not found")
+    void shouldReturnEmptyForInvalidId() {
+        assertThat(bookRepository.findById(999L)).isEmpty();
+    }
+}
