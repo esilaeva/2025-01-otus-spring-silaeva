@@ -1,0 +1,36 @@
+# Ignore IntelliJ IDEA project files and directories
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Ignore build artifacts and temporary files
+target/
+build/
+out/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar
+*.gz
+tmp/
+temp/
+
+# Ignore Git-related files
+.git/
+.gitignore
+
+# Ignore Maven/Gradle specific files
+.gradle/
+.project
+.classpath
+.settings/
+
+# Ignore log files
+*.log
+logs/
+
+# Ignore operating system specific files
+.DS_Store
+Thumbs.db
