@@ -1,0 +1,51 @@
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          address-api:
+            url: http://localhost:8081/
+
+# Test-specific Resilience4j configuration with relaxed rate limiting
+resilience4j:
+  # Rate Limiter settings for testing
+  ratelimiter:
+    instances:
+      # Configuration for testing - allow more requests to properly test circuit breaker
+      addressRL:
+        # Increased limit to allow circuit breaker testing
+        limit-for-period: 20
+        # Shorter refresh period for faster test execution
+        limit-refresh-period: 5s
+        # No timeout for immediate failure when limit exceeded
+        timeout-duration: 0
+
+  # Circuit Breaker settings optimized for testing
+  circuitbreaker:
+    instances:
+      addressCB:
+        sliding-window-type: COUNT_BASED
+        # Smaller sliding window for faster circuit breaker activation in tests
+        sliding-window-size: 5
+        # Same failure rate threshold
+        failure-rate-threshold: 50
+        # Shorter wait duration for faster test execution
+        wait-duration-in-open-state: 2s
+        # Number of permitted calls in the half-open state
+        permitted-number-of-calls-in-halt-open-state: 1
+
+  # Retry settings remain the same for consistency
+  retry:
+    instances:
+      addressRetry:
+        max-attempts: 3
+        max-duration: 1s
+        wait-duration: 100ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - feign.FeignException$InternalServerError  # HTTP 500
+          - feign.FeignException$BadGateway           # HTTP 502
+          - feign.FeignException$ServiceUnavailable   # HTTP 503

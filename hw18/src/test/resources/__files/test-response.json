@@ -1,0 +1,21 @@
+{
+  "status": "OK",
+  "code": 200,
+  "locale": "en_US",
+  "seed": null,
+  "total": 1,
+  "data": [
+    {
+      "id": 1,
+      "street": "98207 Street Name",
+      "streetName": "Street Name",
+      "buildingNumber": "0000",
+      "city": "City Name",
+      "zipcode": "00000",
+      "country": "Country",
+      "country_code": "CC",
+      "latitude": 11.123456,
+      "longitude": 22.234567
+    }
+  ]
+}

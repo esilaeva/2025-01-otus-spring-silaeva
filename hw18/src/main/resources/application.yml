@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: hw18-resilence4j
+
+  # Database connection settings
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  # JPA (Java Persistence API) settings
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  # H2 database console settings
+  h2:
+    console:
+      enabled: true
+
+  # Spring Cloud OpenFeign settings
+  cloud:
+    openfeign:
+      client:
+        config:
+          # Configuration for a specific Feign client named 'address-api'
+          address-api:
+            # URL of the external API that the Feign client will communicate with
+            url: https://fakerapi.it
+
+# Resilience4j settings for fault tolerance
+resilience4j:
+  # Retry mechanism settings
+  # https://resilience4j.readme.io/docs/retry#create-and-configure-retry
+  retry:
+    instances:
+      # Configuration for a specific retry instance named 'addressRetry'
+      addressRetry:
+        # Allowing a maximum of two retry attempts after an initial failed call
+        max-attempts: 3
+        # Maximum duration for the retry attempts
+        max-duration: 1s
+        # The wait time before the next retry attempt
+        wait-duration: 100ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        # A list of exceptions that will trigger a retry
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - feign.FeignException$InternalServerError  # HTTP 500
+          - feign.FeignException$BadGateway           # HTTP 502
+          - feign.FeignException$ServiceUnavailable   # HTTP 503
+
+  # Circuit Breaker pattern settings
+  # https://resilience4j.readme.io/docs/circuitbreaker#create-and-configure-a-circuitbreaker
+  circuitbreaker:
+    instances:
+      # Configuration for a specific circuit breaker instance named 'addressCB'
+      addressCB:
+        sliding-window-type: COUNT_BASED
+        # Size of the sliding window (count-based by default) for calculating the failure rate
+        sliding-window-size: 10
+        # Failure rate threshold in percentage. If the failure rate exceeds this, the circuit breaker opens
+        failure-rate-threshold: 50
+        # Duration to wait in the open state before transitioning to half-open
+        wait-duration-in-open-state: 10s
+        # Number of permitted calls in the half-open state
+        permitted-number-of-calls-in-halt-open-state: 1
+  # Rate Limiter settings
+  ratelimiter:
+    instances:
+      # Configuration for a specific rate limiter instance named 'addressRL'
+      addressRL:
+        # Number of permits available in a period: limit-refresh-period
+        limit-for-period: 3
+        # Time period to refresh the number of permits
+        limit-refresh-period: 10s
+        # Maximum time to wait for a permit
+        timeout-duration: 0
+
+# Logging level settings
+logging:
+  level:
+    # Sets the logging level for the FeignAddressAdapter to DEBUG
+    ru.otus.hw.adapter.FeignAddressAdapter: DEBUG
+    # Sets the logging level for Resilience4j Circuit Breaker to DEBUG
+    io.github.resilience4j.circuitbreaker: DEBUG
+    # Sets the logging level for Resilience4j Retry to DEBUG
+    io.github.resilience4j.retry: DEBUG
+    # Sets the logging level for Resilience4j Rate Limiter to DEBUG
+    io.github.resilience4j.ratelimiter: DEBUG
+    # Sets the logging level for Spring Cloud OpenFeign to DEBUG
+    org.springframework.cloud.openfeign: DEBUG
